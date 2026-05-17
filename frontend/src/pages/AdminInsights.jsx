@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { fetchAdminRecommendations } from '../utils/api';
+import { ShieldCheck, Download, ExternalLink, Lightbulb, CheckCircle2, ChevronRight, FileText } from 'lucide-react';
+
+const AdminInsights = () => {
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const data = await fetchAdminRecommendations();
+        setRecommendations(data);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getData();
+  }, []);
+
+  const handleDownload = () => {
+    alert("Downloading Smart City Urban Resilience Report (PDF)...");
+    // In real app, this would trigger a backend report generation
+  };
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Header with actions */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <ShieldCheck className="w-8 h-8 text-primary-600" />
+            Governance & Infrastructure AI
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">AI-generated infrastructure directives for city administrators.</p>
+        </div>
+        <button 
+          onClick={handleDownload}
+          className="btn-primary flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Download Full Report
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        {recommendations.map((rec, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="glass-card flex flex-col"
+          >
+            <div className="p-6 flex-1">
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${rec.priority === 'Critical' ? 'bg-red-500/10 text-red-500' : 'bg-primary-500/10 text-primary-500'}`}>
+                    <Lightbulb className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg dark:text-white">{rec.ward}</h3>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${rec.priority === 'Critical' ? 'text-red-500' : 'text-primary-500'}`}>
+                      {rec.priority} Priority
+                    </span>
+                  </div>
+                </div>
+                <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                  <ExternalLink className="w-4 h-4 text-slate-400" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {rec.suggestions.map((suggestion, j) => (
+                  <div key={j} className="flex gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{suggestion}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-500">
+              <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Infrastructure ROI: 8.4x</span>
+              <button className="flex items-center gap-1 hover:text-primary-600 transition-colors">
+                View Project Plan <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Global City Strategy */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 30 }}
+        className="glass-card p-8 bg-gradient-to-br from-primary-600 to-blue-700 text-white border-none mt-10 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <FileText className="w-48 h-48" />
+        </div>
+        <div className="relative z-10 max-w-2xl">
+          <h2 className="text-3xl font-bold mb-4">Pune 2030 Heat Resilience Roadmap</h2>
+          <p className="text-primary-100 mb-8 leading-relaxed">
+            AI simulations indicate that by integrating these ward-wise recommendations, the city can reduce the urban heat island effect by up to 2.8°C and optimize cooling energy demand by 18% within 5 years.
+          </p>
+          <div className="flex gap-4">
+            <button className="px-6 py-3 bg-white text-primary-600 font-bold rounded-xl shadow-xl hover:bg-primary-50 transition-colors">
+              Approve Strategic Plan
+            </button>
+            <button className="px-6 py-3 border border-primary-400 text-white font-bold rounded-xl hover:bg-white/10 transition-colors">
+              Schedule Admin Review
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default AdminInsights;
