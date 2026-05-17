@@ -2,7 +2,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import data_processor as dp
 from typing import List, Dict
+from pydantic import BaseModel
 import numpy as np
+
+class WardData(BaseModel):
+    name: str
+    risk_category: str
+    tree_cover: float
+    population: int
 
 app = FastAPI(title="HeatShield AI API")
 
@@ -31,6 +38,22 @@ async def get_heat_risk():
 async def get_energy_forecast():
     try:
         data = dp.get_energy_predictions()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/energy-mix")
+async def get_energy_mix():
+    try:
+        data = dp.get_energy_mix()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ward-energy")
+async def get_ward_energy():
+    try:
+        data = dp.get_ward_energy()
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

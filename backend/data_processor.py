@@ -78,6 +78,25 @@ def get_energy_predictions():
         })
     return predictions
 
+def get_energy_mix():
+    return {
+        "labels": ["Solar", "Wind", "Hydro", "Coal", "Natural Gas"],
+        "data": [
+            np.random.randint(15, 25),
+            np.random.randint(5, 15),
+            np.random.randint(5, 10),
+            np.random.randint(35, 50),
+            np.random.randint(15, 30)
+        ]
+    }
+
+def get_ward_energy():
+    wards = ["Aundh", "Baner", "Kothrud", "Shivajinagar", "Hadapsar", "Viman Nagar", "Kalyani Nagar"]
+    return [
+        {"ward": w, "demand": np.random.randint(200, 800)}
+        for w in wards
+    ]
+
 if __name__ == "__main__":
     w, wd = load_datasets()
     print("Weather columns:", w.columns.tolist() if not w.empty else "Empty")

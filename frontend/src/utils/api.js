@@ -21,3 +21,13 @@ export const fetchAdminRecommendations = async () => {
   const response = await axios.get(`${API_BASE_URL}/admin/recommendations`);
   return response.data;
 };
+
+export const fetchEnergyMix = async () => {
+  const response = await axios.get(`${API_BASE_URL}/energy-mix`);
+  return response.data;
+};
+
+export const fetchWardEnergy = async () => {
+  const response = await axios.get(`${API_BASE_URL}/ward-energy`);
+  return response.data;
+};

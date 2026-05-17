@@ -6,20 +6,24 @@ import {
   LinearScale, 
   PointElement, 
   LineElement, 
+  BarElement,
+  ArcElement,
   Title, 
   Tooltip, 
   Legend,
   Filler
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { fetchEnergyForecast } from '../utils/api';
-import { Zap, TrendingUp, Clock, Calendar } from 'lucide-react';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { fetchEnergyForecast, fetchEnergyMix, fetchWardEnergy } from '../utils/api';
+import { Zap, TrendingUp, Clock, Calendar, BarChart3, PieChart } from 'lucide-react';
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -28,15 +32,23 @@ ChartJS.register(
 
 const EnergyAnalytics = () => {
   const [forecastData, setForecastData] = useState([]);
+  const [energyMix, setEnergyMix] = useState(null);
+  const [wardEnergy, setWardEnergy] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const data = await fetchEnergyForecast();
-        setForecastData(data);
+        const [forecast, mix, ward] = await Promise.all([
+          fetchEnergyForecast(),
+          fetchEnergyMix(),
+          fetchWardEnergy()
+        ]);
+        setForecastData(forecast);
+        setEnergyMix(mix);
+        setWardEnergy(ward);
       } catch (error) {
-        console.error("Error fetching energy forecast:", error);
+        console.error("Error fetching energy data:", error);
       } finally {
         setLoading(false);
       }
@@ -93,6 +105,70 @@ const EnergyAnalytics = () => {
         ticks: { color: '#94a3b8' }
       }
     }
+  };
+
+  const wardChartData = {
+    labels: wardEnergy.map(d => d.ward),
+    datasets: [
+      {
+        label: 'Current Demand (MW)',
+        data: wardEnergy.map(d => d.demand),
+        backgroundColor: 'rgba(14, 165, 233, 0.8)',
+        borderRadius: 4,
+      }
+    ]
+  };
+
+  const wardOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      y: {
+        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+        ticks: { color: '#94a3b8' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#94a3b8' }
+      }
+    }
+  };
+
+  const mixChartData = energyMix ? {
+    labels: energyMix.labels,
+    datasets: [
+      {
+        data: energyMix.data,
+        backgroundColor: [
+          '#facc15', // Solar (Yellow)
+          '#38bdf8', // Wind (Light Blue)
+          '#34d399', // Hydro (Green)
+          '#64748b', // Coal (Slate)
+          '#fb923c', // Gas (Orange)
+        ],
+        borderWidth: 0,
+      }
+    ]
+  } : null;
+
+  const mixOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          color: '#94a3b8',
+          font: { family: 'Outfit' },
+          usePointStyle: true,
+          padding: 20
+        }
+      }
+    },
+    cutout: '70%'
   };
 
   if (loading) return <div>Loading...</div>;
@@ -157,6 +233,38 @@ const EnergyAnalytics = () => {
             </p>
           </motion.div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card p-6 h-[400px]"
+        >
+          <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-primary-500" />
+            Ward-wise Energy Demand
+          </h3>
+          <div className="h-[300px]">
+            <Bar data={wardChartData} options={wardOptions} />
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="glass-card p-6 h-[400px]"
+        >
+          <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+            <PieChart className="w-5 h-5 text-green-500" />
+            Live Energy Mix
+          </h3>
+          <div className="h-[300px] flex justify-center">
+            {mixChartData && <Doughnut data={mixChartData} options={mixOptions} />}
+          </div>
+        </motion.div>
       </div>
     </div>
   );
