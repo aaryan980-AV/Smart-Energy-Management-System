@@ -89,6 +89,14 @@ async def get_recommendations():
         })
     return recs
 
+@app.get("/api/carbon-emissions")
+async def get_carbon_emissions():
+    try:
+        data = dp.get_carbon_emissions()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

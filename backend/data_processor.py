@@ -59,7 +59,10 @@ def get_heat_risk_data():
             "risk_score": round(risk_score, 2),
             "risk_category": risk_category,
             "lat": 18.5204 + (np.random.random() - 0.5) * 0.1,
-            "lng": 73.8567 + (np.random.random() - 0.5) * 0.1
+            "lng": 73.8567 + (np.random.random() - 0.5) * 0.1,
+            "aqi": np.random.randint(40, 180),
+            "recycling_rate": np.random.randint(30, 85),
+            "carbon_footprint": round(np.random.random() * 5 + 1, 1) # Metric tons per capita
         })
         
     return processed_wards
@@ -96,6 +99,21 @@ def get_ward_energy():
         {"ward": w, "demand": np.random.randint(200, 800)}
         for w in wards
     ]
+
+def get_carbon_emissions():
+    return {
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        "datasets": [
+            {
+                "label": "Actual Emissions (kt)",
+                "data": [120, 115, 118, 110, 105, 102]
+            },
+            {
+                "label": "Target Emissions (kt)",
+                "data": [115, 110, 105, 100, 95, 90]
+            }
+        ]
+    }
 
 if __name__ == "__main__":
     w, wd = load_datasets()

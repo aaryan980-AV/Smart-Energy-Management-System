@@ -31,3 +31,8 @@ export const fetchWardEnergy = async () => {
   const response = await axios.get(`${API_BASE_URL}/ward-energy`);
   return response.data;
 };
+
+export const fetchCarbonEmissions = async () => {
+  const response = await axios.get(`${API_BASE_URL}/carbon-emissions`);
+  return response.data;
+};

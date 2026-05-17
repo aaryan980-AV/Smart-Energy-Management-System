@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Thermometer, 
@@ -11,6 +11,7 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
+import { fetchHeatRiskData } from '../utils/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -143,6 +144,22 @@ const StatCard = ({ title, value, icon: Icon, trend, color, delay }) => (
 );
 
 const Dashboard = () => {
+  const [wardData, setWardData] = useState([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const data = await fetchHeatRiskData();
+        // Sort by temperature (highest first)
+        const sorted = data.sort((a, b) => b.avg_temp - a.avg_temp);
+        setWardData(sorted);
+      } catch (error) {
+        console.error("Error fetching ward data:", error);
+      }
+    };
+    getData();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Hero Welcome */}
@@ -201,27 +218,22 @@ const Dashboard = () => {
         </div>
 
         {/* Side Panel */}
-        <div className="glass-card p-6 h-[400px]">
-          <h3 className="font-bold text-slate-800 dark:text-white mb-6">High Risk Wards</h3>
-          <div className="space-y-4">
-            {[
-              { name: 'Kothrud', risk: 'High', temp: '38°C' },
-              { name: 'Shivajinagar', risk: 'High', temp: '37.5°C' },
-              { name: 'Hadapsar', risk: 'Medium', temp: '36°C' },
-              { name: 'Baner', risk: 'Medium', temp: '35.8°C' },
-            ].map((ward, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+        <div className="glass-card p-6 h-[400px] flex flex-col">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-6">All City Temperatures</h3>
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2 pb-2 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
+            {wardData.map((ward, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${ward.risk === 'High' ? 'bg-red-500' : 'bg-orange-500'}`} />
+                  <div className={`w-2 h-2 rounded-full ${ward.risk_category === 'High' ? 'bg-red-500' : ward.risk_category === 'Medium' ? 'bg-orange-500' : 'bg-green-500'}`} />
                   <span className="font-medium dark:text-slate-200">{ward.name}</span>
                 </div>
-                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{ward.temp}</span>
+                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{ward.avg_temp}°C</span>
               </div>
             ))}
+            {wardData.length === 0 && (
+              <div className="text-center text-slate-500 py-4">Loading data...</div>
+            )}
           </div>
-          <button className="w-full mt-6 py-2 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline">
-            View full analysis
-          </button>
         </div>
       </div>
     </div>
